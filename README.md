@@ -255,12 +255,6 @@ H2 is in-memory and the Firebase beans are overridden.
 
 These are deliberate and documented rather than hidden.
 
-**Sync can miss a row written during a pull.** `updatedAt` is stamped in application code *before*
-the write commits, so a row stamped `T` can commit after one stamped `T+5`. A client that already
-advanced past `T+5` will not see the `T` row again. Deriving the cursor from returned rows rather
-than from "now" narrows the window considerably but does not close it. The real fix is a monotonic,
-database-assigned sequence to sync on instead of a wall-clock timestamp.
-
 **Permanent delete leaves no tombstone.** `DELETE` removes the row outright, so a client offline
 across *both* the trash and the delete never learns the file is gone. The trash-first requirement
 narrows this — the tombstone exists for the whole window between the two calls — but closing it
@@ -276,5 +270,3 @@ still be found and removed by hand, but there is no reconciliation sweep.
 **Assets uploaded before `publicId` was stored cannot be deleted** through the API, since the handle
 needed to address them was never recorded.
 
-**Not covered by tests:** the concurrent-write race at save time (unit-tested with a simulated
-failure, never actually raced), and `audio/*` uploads mapping to Cloudinary's `video` resource type.
